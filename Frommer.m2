@@ -1,5 +1,5 @@
 newPackage(
-     "Frommer2",
+     "Frommer",
      Version => "1.0", 
      Date => "14.06.2024",
      Authors => {{
@@ -536,7 +536,7 @@ beginDocumentation()
 
     doc ///
      Key
-       Frommer2
+       Frommer
      Headline
        compute focal values of a differential form
      Description
@@ -589,7 +589,7 @@ beginDocumentation()
           computeRequestedFocalValuesNum(QQ , PQList, 1)
 
      SeeAlso
-          Frommer2
+          Frommer
      ///
 
      TEST ///
@@ -673,7 +673,7 @@ beginDocumentation()
 	    n = getVanishedFocalValuesNum(Fp,L)
 	    rank computeFocalValuesJacobian(n,Fp, Fpe, PQList, L, e)
     SeeAlso
-          Frommer2
+          Frommer
 	  computeRequestedFocalValuesNum
 	  getVanishedFocalValuesNum
      ///
@@ -716,7 +716,7 @@ beginDocumentation()
     Caveat
     	 Assumes at the moment, that the coefficient ring is a field.
     SeeAlso
-          Frommer2
+          Frommer
 	  computeRequestedFocalValuesNum
 	  computeFocalValuesJacobian
      ///
@@ -757,15 +757,15 @@ end
 end
 ----
 
-uninstallPackage"Frommer2"
+uninstallPackage"Frommer"
 restart
 --path = append(path,"../code/Center/")
 path = {"~/Desktop/projekte/strudel/Jakob2010/svn/macaulay-packages"}|path
-installPackage"Frommer2"
---viewHelp Frommer
+installPackage"Frommer"
+viewHelp Frommer
 
 restart
-loadPackage"Frommer2"
+loadPackage"Frommer"
 
 ------------
 --Example:

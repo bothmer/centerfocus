@@ -3,14 +3,12 @@ needsPackage"CenterFocus";
 newPackage(
      "Darboux",
      Version => "1.0", 
-     Date => "21.1.2011",
+     Date => "16.8.2024",
      Authors => {{
 	       Name => "Hans-Christian Graf v. Bothmer", 
 	       Email => "bothmer@math.uni-hannover.de", 
 	       HomePage => "http://www.crcg.de/wiki/Bothmer"},{
-	       Name => "Jakob Kroeker", 
-	       Email => "kroeker@uni-math.gwdg.de", 
-	       HomePage => "http://www.crcg.de/wiki/User:Kroeker"}	       
+	       Name => "Jakob Kroeker"}   
 	  },
      Headline => "Darboux Integrability",
      DebuggingMode => true
@@ -61,10 +59,12 @@ needsPackage"CenterFocus"
 -- the ring of the polynomials must contain x and y 
 darbouxMatrix = (LC) -> (
      Rlocal := ring(LC#0);
+     x := (getSymbol"x")_Rlocal;
+     y := (getSymbol"y")_Rlocal;
      -- totaldegree of curves minus 1
      degLCminus := apply(LC,l->(sum degree l)-1);
      -- Darboux Matrix of derivatives and equations
-     M := diff(matrix{{(symbol x)_Rlocal,(symbol y)_Rlocal}},transpose matrix{LC})|fold((a,b)->a++b,LC);
+     M := diff(matrix{{x,y}},transpose matrix{LC})|fold((a,b)->a++b,LC);
      -- unfortunately M2 does not give this matrix the correct grading
      -- random Matrix with correct grading and 0 entries
      Mr := 0*random(Rlocal^degLCminus,Rlocal^{0,0,#LC:-1});
@@ -77,8 +77,9 @@ darbouxMatrix = (LC) -> (
 -- homogenization Variable must be named z
 darbouxSyzToDifferential = (s,dR) -> (
      R := ring s;
-     P := -sub(s_0_1,(symbol z)_R=>1);
-     Q := sub(s_0_0,(symbol z)_R=>1);
+     z := (getSymbol"z")_R;
+     P := -sub(s_0_1,z=>1);
+     Q := sub(s_0_0,z=>1);
      sub(P,dR)*(symbol dx)_dR + sub(Q,dR)*(symbol dy)_dR
      )
 
@@ -99,15 +100,21 @@ darbouxCofactor = (omega,Faffine) -> (
 -- L = {differential Form,{(integral curve1,cofactor1),...}
 -- and returns the corresponding DarbouxMatrix and syzygy
 darbouxMatrixSyz = (L) -> (
+     -- the differential ring
      dR := ring L#1#0#1;
+     --dx := (symbol dx)_dR;
+     --dy := (symbol dy)_dR;
+     -- the commutative part
      R := differentialHomCommutativePart dR;
-     curves := apply(L#1,i->homogenize(sub(i#0,R),(symbol z)_R));
+     z := (getSymbol"z")_R;
+     -- the curves as homogenized polynomials
+     curves := apply(L#1,i->homogenize(sub(i#0,R),z));
      M := darbouxMatrix(curves);
      omega := toDifferentialForm(L#0,dR);
-     P := contract((symbol dx)_dR,omega);
-     Q := contract((symbol dy)_dR,omega);
-     sList := { Q,-P}|apply(L#1,i->-contract((symbol dx)_dR*(symbol dy)_dR,i#1));
-     s := matrix apply(sList,i->{homogenize(sub(i,R),(symbol z)_R)});
+     P := contract(dx,omega);
+     Q := contract(dy,omega);
+     sList := { Q,-P}|apply(L#1,i->-contract(dx*dy,i#1));
+     s := matrix apply(sList,i->{homogenize(sub(i,R),z)});
      assert(M*s==0);
      (M,s)
      )
@@ -189,11 +196,15 @@ darbouxCofactorDiffCoefficients = method()
 --   L ist a list (differentialFromInList Format, List of Cofactors)
 darbouxCofactorDiffCoefficients (List) := (L) -> (
      dR := ring L#1#0#1;
+     x := (getSymbol"x")_dR;
+     y := (getSymbol"y")_dR;
+     --dx := (symbol dx)_dR;
+     --dy := (symbol dy)_dR;
      omega := toDifferentialForm(L#0,dR);
      numCurves := #L#1;
      KM := sub(last coefficients(
 	       matrix {apply(L#1,i->i#1)}|differentialD(omega),
-	       Variables=>((symbol x)_dR,(symbol y)_dR,(symbol dx)_dR,(symbol dy)_dR)
+	       Variables=>{x,y,dx,dy}
 	       )
 	  ,differentialCoefficientRing dR)
      )
@@ -205,13 +216,15 @@ darbouxCofactorDiffCoefficients (List) := (L) -> (
 --
 darbouxCofactorDiff = (s) -> (
      R := ring s;
+     x := (getSymbol"x")_R;
+     y := (getSymbol"y")_R;
      --omega := darbouxSyzToDifferential(s,dR)
      -- homogenize D(omega)
      --dOmega := homogenize(sub(contract((symbol dx)_dR*(symbol dy)_dR,differentialD(omega)),R),(symbol z)_R)
      -- 
      -- calculate the differential directly 
      -- (no need to introduce a differential ring)
-     dOmega := -diff((symbol x)_R,s^{0})-diff((symbol y)_R,s^{1});
+     dOmega := -diff(x,s^{0})-diff(y,s^{1});
      --return matrix entries (-(transpose s^{2..numrows s-1})|dOmega)
      return matrix entries (-(transpose(s^{2..numrows s-1}||-dOmega)))
      )
@@ -226,10 +239,13 @@ darbouxCofactorDiff = (s) -> (
 -- !!!! possibly the signs of the K_i are wrong !!!
 darbouxCofactorDiffCoefficients (Matrix) := (s) -> (
      R := ring s;
+     x := (getSymbol"x")_R;
+     y := (getSymbol"y")_R;
+     z := (getSymbol"z")_R;
      M := darbouxCofactorDiff(s);
      last coefficients(
 	       M,
-	       Variables=>((symbol x)_R,(symbol y)_R,(symbol z)_R)
+	       Variables=>(x,y,z)
 	       )
      )
 
@@ -307,7 +323,13 @@ deformIntegralCurve = (d,i,a) -> (
 --     )
 -- 
 darbouxTangentSpace = (L,a) -> (
+     -- the differential ring
      dA := ring a;
+     x := (getSymbol"x")_dA;
+     y := (getSymbol"y")_dA;
+     dx := (symbol dx)_dA;
+     dy := (symbol dy)_dA;
+     -- the commutative part
      A := differentialCoefficientRing dA;
      Afield := coefficientRing(A);
      -- deformation of differential Form
@@ -331,7 +353,7 @@ darbouxTangentSpace = (L,a) -> (
 		    matrix {
 			 apply(defCurveCofactor,
 			      ll->differentialD(ll#0)*omegaEps-ll#0*ll#1)},
-		    Variables=>((symbol x)_dA,(symbol y)_dA,(symbol dx)_dA,(symbol dy)_dA)
+		    Variables=>(x,y,dx,dy)
 		    )
 	       ,A)
 	  ,(symbol eps)_A=>1);
@@ -409,12 +431,13 @@ darbouxDiffToSyz = (omega,curves) -> (
      dR := ring omega;
      curvesAff := apply(curves,C->differentialHomToAffine(C,dR));
      Rhom := differentialHomCommutativePart dR;
-     curvesHom := apply(curves,C->homogenize(sub(C,Rhom),(symbol z)_Rhom));
+     z := (getSymbol"z")_Rhom;
+     curvesHom := apply(curves,C->homogenize(sub(C,Rhom),z));
      DX := (symbol dx)_dR;
      DY := (symbol dy)_dR;
      cofactors := apply(curvesAff,Caff->darbouxCofactor(omega,Caff));
      if member(null,cofactors) then error "Not an integral curve";
-     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega}|cofactors}),Rhom),(symbol z)_Rhom);
+     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega}|cofactors}),Rhom),z);
      shom := matrix apply(flatten entries s,i->{i});
      assert (omega == darbouxSyzToDifferential(shom,dR));
      assert (0 == darbouxMatrix(curvesHom)*shom);
@@ -424,20 +447,24 @@ darbouxDiffToSyz = (omega,curves) -> (
 -- check if omega has infinitely many integral curves
 darbouxInfinitelyManyCurves = (omega,F) -> (
      dR := ring omega;
-     Faffine := differentialHomToAffine(F,dR);
-     Rhom := differentialHomCommutativePart dR;
      DX := (symbol dx)_dR;
      DY := (symbol dy)_dR;
+     Faffine := differentialHomToAffine(F,dR);
+     Rhom := differentialHomCommutativePart dR;
+     x := (getSymbol"x")_Rhom;
+     y := (getSymbol"y")_Rhom;
+     z := (getSymbol"z")_Rhom;
+     -- the cofactor
      K := darbouxCofactor(omega,Faffine);
      if K === null then error "Not an integral curve";
-     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega,K}}),Rhom),(symbol z)_Rhom);
+     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega,K}}),Rhom),z);
      shom := matrix{flatten entries s};
      assert (omega == darbouxSyzToDifferential(transpose shom,dR));
      if shom_2_0 == 0 then (
 	  (true,{Faffine,1})
 	  ) else (
      	  M := matrix entries super basis(sum degree omega-2+sum degree F,syz shom);
-     	  diffM := M^{0,1}-diff(matrix{{(symbol x)_Rhom},{(symbol y)_Rhom}},M^{2});
+     	  diffM := M^{0,1}-diff(matrix{{x},{y}},M^{2});
 	  sDiffM := syz last coefficients diffM;
 	  MsDiffM := (M*sDiffM);
 	  minMsDiffM := MsDiffM * syz transpose syz last coefficients MsDiffM;
@@ -454,7 +481,13 @@ darbouxTangentLine = (point,curve) -> (
      t := (vars ring curve * sub(jacobian(ideal curve),coordinatesPoint))_0_0;
      -- is this realy a tangent line?
      I := ideal(t,curve);
-     assert (degree I > degree radical I);
+     --assert (degree I > degree radical I);
+     -- !!!!!!!! Caution !!!!!!!!!!!!!
+     -- I had to comment this example out, since Macaulay
+     -- did not recognize "radical". Here is the error message
+     --
+     -- stdio:2:1:(3): error: mutable unexported unset symbol(s) in package Darboux: 'radical'
+     -- Darboux.m2:484:31-484:38: here is the first use of 'radical'
      return t
      )
 -- use tangentLine also in 9.8
@@ -1796,6 +1829,8 @@ uninstallPackage"Darboux"
 restart
 path = {"~/Desktop/projekte/strudel/Jakob2010/svn/macaulay-packages"}|path
 installPackage"Darboux"
+
+
 viewHelp Darboux
 --value(print get"IC_11_35.m2")
 

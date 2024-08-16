@@ -1,7 +1,7 @@
 newPackage(
-     "Frommer",
+     "Frommer2",
      Version => "1.0", 
-     Date => "20.10.2016",
+     Date => "14.06.2024",
      Authors => {{
 	       Name => "Hans-Christian Graf v. Bothmer", 
 	       Email => "hcvbothmer@gmail.com", 
@@ -13,6 +13,17 @@ newPackage(
      Headline => "Frommer's algorithm",
      DebuggingMode => true
      )
+
+--------------------------------------------------------
+-- trying to update to current Macaulay2 version 1.24 --
+--------------------------------------------------------
+
+-- error persists even if we remove Documentation
+-- doesn't help to remove or change the headline
+-- the problem seems to be in the package "randomObjects"
+--      uninstalling it, makes it ok
+--
+-- !! ww do not need to change Frommer!!
 
 export {
      "computeRequestedFocalValuesNum",
@@ -525,7 +536,7 @@ beginDocumentation()
 
     doc ///
      Key
-       Frommer
+       Frommer2
      Headline
        compute focal values of a differential form
      Description
@@ -578,7 +589,7 @@ beginDocumentation()
           computeRequestedFocalValuesNum(QQ , PQList, 1)
 
      SeeAlso
-          Frommer
+          Frommer2
      ///
 
      TEST ///
@@ -615,6 +626,8 @@ beginDocumentation()
 
      ///
 
+
+     
      doc ///
      Key
      	  computeFocalValuesJacobian
@@ -660,7 +673,7 @@ beginDocumentation()
 	    n = getVanishedFocalValuesNum(Fp,L)
 	    rank computeFocalValuesJacobian(n,Fp, Fpe, PQList, L, e)
     SeeAlso
-          Frommer
+          Frommer2
 	  computeRequestedFocalValuesNum
 	  getVanishedFocalValuesNum
      ///
@@ -703,7 +716,7 @@ beginDocumentation()
     Caveat
     	 Assumes at the moment, that the coefficient ring is a field.
     SeeAlso
-          Frommer
+          Frommer2
 	  computeRequestedFocalValuesNum
 	  computeFocalValuesJacobian
      ///
@@ -744,14 +757,15 @@ end
 end
 ----
 
-uninstallPackage"Frommer"
+uninstallPackage"Frommer2"
 restart
 --path = append(path,"../code/Center/")
 path = {"~/Desktop/projekte/strudel/Jakob2010/svn/macaulay-packages"}|path
-installPackage"Frommer"
+installPackage"Frommer2"
 --viewHelp Frommer
 
-
+restart
+loadPackage"Frommer2"
 
 ------------
 --Example:

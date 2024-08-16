@@ -327,8 +327,8 @@ darbouxTangentSpace = (L,a) -> (
      dA := ring a;
      x := (getSymbol"x")_dA;
      y := (getSymbol"y")_dA;
-     dx := (symbol dx)_dA;
-     dy := (symbol dy)_dA;
+     --dx := sub(dx,dA);
+     --dy := sub(dy,dA);
      -- the commutative part
      A := differentialCoefficientRing dA;
      Afield := coefficientRing(A);
@@ -353,7 +353,7 @@ darbouxTangentSpace = (L,a) -> (
 		    matrix {
 			 apply(defCurveCofactor,
 			      ll->differentialD(ll#0)*omegaEps-ll#0*ll#1)},
-		    Variables=>(x,y,dx,dy)
+		    Variables=>(x,y,sub(dx,dA),sub(dy,dA))
 		    )
 	       ,A)
 	  ,(symbol eps)_A=>1);
@@ -1323,8 +1323,8 @@ doc ///
 	  in tangent space calculations.
        Example
           A = QQ[a, Degrees => {0}]
-	  dA = differentialRing A	
-	  (g,i) = deformCofactor(1,a)
+	  dA = differentialRingNoJoin A	
+	  (g,i) = deformCofactor(1,sub(a,dA))
 	  coefficients(g,Variables=>{x,y,dx,dy})
      Caveat
      	  the variable a should be of degree 0. It is assumed that the
@@ -1364,8 +1364,8 @@ doc ///
 	  in tangent space calculations.
        Example
           A = QQ[a, Degrees => {0}]
-	  dA = differentialRing A	
-	  (g,i) = deformIntegralCurve(3,1,a)
+	  dA = differentialRingNoJoin A	
+	  (g,i) = deformIntegralCurve(3,1,sub(a,dA))
 	  coefficients(g,Variables=>{x,y,dx,dy})
      Caveat
      	  the variable a should be of degree 0. Assumes that the
@@ -1404,7 +1404,8 @@ doc ///
        	  An example from Johannes Steiners ideal 35,11:
        Example
        	  Fp = ZZ/29
-	  dFp = differentialRing Fp  
+	  Bp = Fp[bbb,eps, Degrees => {0,0}]/(ideal eps^2)
+          dBp = differentialRingNoJoin Bp
        	  L = {{{16, 2, 14}, {6, 19, 13}, {11, 1, 4, 3}, {4, 27, 11, 23}},
               {(13*x+y-7,-8*x^2*dx*dy+3*x*y*dx*dy+6*y^2*dx*dy-4*x*dx*dy-6*y*dx*dy),
               (
@@ -1432,10 +1433,7 @@ doc ///
        Text
        	  now calculate the tangent spaces
        Example
-       	  Bp = Fp[bbb,eps, Degrees => {0,0}]/(ideal eps^2)
-	  dBp = differentialRing Bp
-	  bbb = (symbol bbb)_dBp
- 	  darbouxTangentSpace(L,bbb)
+ 	  darbouxTangentSpace(L,sub(bbb,dBp))
        Text
        	  all codimensions are the same, this means that all defomation of
 	  the geometic integral curve configuration have a Darboux integrating

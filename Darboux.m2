@@ -91,8 +91,11 @@ darbouxCofactor = (omega,Faffine) -> (
      -- put curve in same ring
      F := sub(Faffine,dR);
      dF := differentialD(F);
-     KF := omega*dF // F;
-     if KF*F == omega*dF then KF else null
+     -- corrected sign convention
+     KF := dF*omega // F;
+     if dF*omega == F*KF  then KF else null
+     --KF := omega*dF // F;  
+     --if KF*F == omega*dF then KF else null
      ) 
 
 -- takes a structured List of Differentialform, Integral curves
@@ -437,7 +440,7 @@ darbouxDiffToSyz = (omega,curves) -> (
      DY := (symbol dy)_dR;
      cofactors := apply(curvesAff,Caff->darbouxCofactor(omega,Caff));
      if member(null,cofactors) then error "Not an integral curve";
-     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega}|cofactors}),Rhom),z);
+     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega}|(-cofactors)}),Rhom),z);
      shom := matrix apply(flatten entries s,i->{i});
      assert (omega == darbouxSyzToDifferential(shom,dR));
      assert (0 == darbouxMatrix(curvesHom)*shom);

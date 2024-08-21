@@ -229,7 +229,7 @@ darbouxCofactorDiff = (s) -> (
      -- (no need to introduce a differential ring)
      dOmega := -diff(x,s^{0})-diff(y,s^{1});
      --return matrix entries (-(transpose s^{2..numrows s-1})|dOmega)
-     return matrix entries (-(transpose(s^{2..numrows s-1}||-dOmega)))
+     return matrix entries (-(transpose(s^{2..numrows s-1}||dOmega)))
      )
 
 -- input:
@@ -925,7 +925,7 @@ beginDocumentation()
      	  M = darbouxCofactorDiff(s)
      Inputs
      	  s: Matrix
-	     a homogeneous syzygy \{\{Q\},\{ -P\},\{K_1\},...,\{K_r\}\} of a Darboux Matrix
+	     a homogeneous syzygy \{\{Q\},\{ -P\},\{-K_1\},...,\{-K_r\}\} of a Darboux Matrix
      Outputs
      	  M: Matrix
 	     1 x r+1 of cofactors and D(Pdx+Qdy)
@@ -951,6 +951,20 @@ beginDocumentation()
      ///
 
      TEST ///
+     assert (
+         Fp = ZZ/29;
+         dFp = differentialRing Fp;
+         Q = 2*x*y-x+y;
+         P = -(2*x*y+4*y^2-2*y);
+         omega = P*dx + Q*dy;
+         C = x+y;
+         K = darbouxCofactor(omega,C);
+         Rhom = differentialHomCommutativePart dFp;
+         Khom = homogenize(sub(contract(dx*dy,K),Rhom),z);
+         domegaHom = homogenize(sub(contract(dx*dy,differentialD(omega)),Rhom),z)
+         s = darbouxDiffToSyz(omega,{C});
+         darbouxCofactorDiff(s) == matrix{{Khom,domegaHom}}
+    )
      ///
 
 doc ///

@@ -617,13 +617,10 @@ beginDocumentation()
 	    null is returned
        Example
             dQQ = differentialRing QQ
-	    R = differentialHomCommutativePart dQQ
-	    LC = {x^2-y*z,x+y}
-	    M = darbouxMatrix LC
-	    sM = super basis(2,ker M)
-	    s = sM_{0}
-	    omega = darbouxSyzToDifferential(s,dQQ)
-	    darbouxCofactor(omega,sub(LC#0,z=>1))
+            omega = -2*x*y*dx+2*x*y*dy-4*y^2*dx-x*dy+2*y*dx+y*dy
+            C = x^2-y
+	    K = darbouxCofactor(omega,C)
+            differentialD(C)*omega == C*K
      Caveat
        	    The equation of the curve must be affine! The 
 	    function will not work with the homogeneous 
@@ -638,6 +635,13 @@ beginDocumentation()
 
 
      TEST ///
+     assert (
+         dQQ = differentialRing QQ;
+         omega = -2*x*y*dx+2*x*y*dy-4*y^2*dx-x*dy+2*y*dx+y*dy;
+         C = x^2-y;
+         K = darbouxCofactor(omega,C);
+         differentialD(C)*omega == C*K
+         )
      ///
 
      doc ///
@@ -1756,21 +1760,29 @@ doc ///
 	     of integral curves
      Outputs
      	  s: Matrix
-	     of the form (Q,-P,K_1,..,K_n)^t 
+	     of the form (Q,-P,-K_1,..,-K_n)^t 
      Description
        Text
        	  From \omega = Pdx + Qdy and a list of curves {C_1,..,C_k} calculate
-	  the cofactors {K_1,..,K_k} and make a matrix (Q,-P,K_1,..,K_n)^t that is a 
+	  the cofactors {K_1,..,K_k} and make a matrix (Q,-P,-K_1,..,-K_n)^t that is a 
 	  syzygy of the Darboux matrix defined by the same list
 	  of curves.
        Example
-          dQQ = differentialRing QQ;
-	  omega = 2*x^2*dy-2*x*y*dx+x*y*dy-y^2*dx-2*x*dx+2*y*dy+dx+2*dy;
-	  use differentialHomCommutativePart dQQ;
-	  curves = {x^2-y^2+z^2,x+2*y+2*z};
+          dQQ = differentialRing QQ
+          P = -2*x*y-4*y^2+2*y
+          Q = 2*x*y-x+y
+	  omega = P*dx+Q*dy
+	  Rhom = differentialHomCommutativePart dQQ
+	  curves = {x^2-y,x+y};
 	  s = darbouxDiffToSyz(omega,curves)
 	  M = darbouxMatrix(curves)
      	  M*s
+       Text
+          We check also the signs
+       Example
+          K0 = contract(dx*dy,darbouxCofactor(omega,curves#0))
+          K1 = contract(dx*dy,darbouxCofactor(omega,curves#1))
+          sub(sub(s,z=>1),dQQ) - matrix{{Q},{-P},{-K0},{-K1}}          
      SeeAlso
      	  differentialRing
 	  differentialHomCommutativePart
@@ -1789,6 +1801,20 @@ doc ///
 	  )
      ///
 
+     TEST ///
+     assert (
+          dQQ = differentialRing QQ;
+          P = -2*x*y-4*y^2+2*y;
+          Q = 2*x*y-x+y;
+	  omega = P*dx+Q*dy;
+	  Rhom = differentialHomCommutativePart dQQ;
+	  curves = {x^2-y,x+y};
+	  s = darbouxDiffToSyz(omega,curves);
+          K0 = contract(dx*dy,darbouxCofactor(omega,curves#0));
+          K1 = contract(dx*dy,darbouxCofactor(omega,curves#1));
+          0==sub(sub(s,z=>1),dQQ) - matrix{{Q},{-P},{-K0},{-K1}}          
+	  )
+     ///
 
 
   
@@ -1831,6 +1857,8 @@ restart
 path = {"~/Desktop/projekte/strudel/Jakob2010/svn/macaulay-packages"}|path
 installPackage"Darboux"
 
+
+check "Darboux"
 
 viewHelp Darboux
 --value(print get"IC_11_35.m2")

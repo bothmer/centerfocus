@@ -460,7 +460,7 @@ darbouxInfinitelyManyCurves = (omega,F) -> (
      -- the cofactor
      K := darbouxCofactor(omega,Faffine);
      if K === null then error "Not an integral curve";
-     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega,K}}),Rhom),z);
+     s := homogenize(sub(contract(DX*DY,matrix{{DX*omega,DY*omega,-K}}),Rhom),z);
      shom := matrix{flatten entries s};
      assert (omega == darbouxSyzToDifferential(transpose shom,dR));
      if shom_2_0 == 0 then (
@@ -961,9 +961,9 @@ beginDocumentation()
          K = darbouxCofactor(omega,C);
          Rhom = differentialHomCommutativePart dFp;
          Khom = homogenize(sub(contract(dx*dy,K),Rhom),z);
-         domegaHom = homogenize(sub(contract(dx*dy,differentialD(omega)),Rhom),z)
+         domegaHom = homogenize(sub(contract(dx*dy,differentialD(omega)),Rhom),z);
          s = darbouxDiffToSyz(omega,{C});
-         darbouxCofactorDiff(s) == matrix{{Khom,domegaHom}}
+         0 == darbouxCofactorDiff(s) - matrix{{Khom,domegaHom}}
     )
      ///
 
@@ -1604,12 +1604,12 @@ doc ///
           assert (
 	          R = QQ[x,y,z];
      	   	  syzM = (syz darbouxMatrix{x^2*z-y^3})_{0};
-	   	  matrix{{6,-5_R}} == darbouxEvalCofactorDiffQQ({ideal(x,y)},syzM)	   
+	   	  matrix{{6,5_R}} == darbouxEvalCofactorDiffQQ({ideal(x,y)},syzM)	   
      	         )
      	  assert (
 	          R = QQ[x,y,z];
      	   	  syzM = (syz darbouxMatrix{x*z+y^2,x*z-y^2})_{0};
-	   	  matrix{{2,2,-3_R}} == darbouxEvalCofactorDiffQQ({ideal(x,y)},syzM)	   
+	   	  matrix{{2,2,3_R}} == darbouxEvalCofactorDiffQQ({ideal(x,y)},syzM)	   
      	         )
      ///
  
@@ -1693,9 +1693,9 @@ doc ///
      assert (
 	    R = QQ[x,y,z];
 	    C = x^2-y*z;
-	    T = darbouxTangentLine(C,ideal(x,y));
+	    T = darbouxTangentLine(ideal(x,y),C);
 	    I = ideal(C,T);
-	    assert (degree I > degree radical I)
+	    degree I > degree radical I
 	    )
      ///
      

@@ -83,19 +83,19 @@ assert (omegaQQ == darbouxSyzToDifferential(s,dQQ))
 
 -- evaluate cofactors and domega in special points
 eval = darbouxEvalCofactorDiffQQ({pointE,pointF,pointH,pointI,pointJ,pointC},s)
--- | 0 -1 1  |
--- | 0 -1 1  |
--- | 0 1  -1 |
--- | 0 -1 1  |
--- | 0 -1 1  |
--- | 1 3  -2 |
+-- | 0 1 1 |
+-- | 0 1 1 |
+-- | 0 1 1 |
+-- | 0 1 1 |
+-- | 0 1 1 |
+-- | 1 3 2 |
 
 syz eval
+-- | 1  |
 -- | -1 |
 -- | 1  |
--- | 1  |
 
--- check if the 
+-- apply Frommers algorithm to this example
 Fp = ZZ/101
 dFp = differentialRing Fp
 omegaNorm = (differentialNormalizeIfPossible(sub(omegaQQ,dFp)))#0
@@ -106,7 +106,7 @@ time assert (toList(20:0) == frommer(omegaNorm,20))
 
 -- test: is this a smooth point on the component?
 time assert (9==rank frommerJacobian(omegaNorm,11))
--- used 23.9294 seconds
+-- used 7.04835s (cpu); 0.156645s (thread); 0s (gc)
 
 
 -- check for infinitely many algebraic integral curves

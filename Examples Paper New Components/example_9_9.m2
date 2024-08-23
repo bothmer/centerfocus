@@ -46,7 +46,7 @@ T = tangentH*tangentI*tangentJ
 -- the product of all integral curves	
 Ctotal = T*Q
 -- test: are curves really integral curve of omegaQQ?
-assert (null =!= darbouxCofactor(omegaQQ,differentialHomToAffine(Ctotal,dQQ))
+assert (null =!= darbouxCofactor(omegaQQ,differentialHomToAffine(Ctotal,dQQ)))
 
 -- construction
 -- Choose a point G at infinity and 3 general points H, I, J 
@@ -99,32 +99,33 @@ assert (omegaQQ == darbouxSyzToDifferential(s,dQQ))
 
 -- eval at special points and at any point at infinity
 eval = darbouxEvalCofactorDiffQQ(pointsQQ,s)
--- | 0  -1 1  |
--- | 0  -1 1  |
--- | 0  1  -1 |
--- | 2  2  -3 |
--- | -2 -2 3  |
--- | 2  2  -3 |
+-- | 0 1 1 |
+-- | 0 1 1 |
+-- | 0 1 1 |
+-- | 2 2 3 |
+-- | 2 2 3 |
+-- | 2 2 3 |
 
 syz eval
--- | 1 |
--- | 2 |
+-- | -1 |
+-- | -2 |
 -- | 2 |
 
 -- check for infinitely many algebraic integral curves
 time factor differentialExtacticCurve(omegaQQ,1)
 -- (y)(y - 1)(- 2x + y + 1)(2x + y + 1)...
 -- used 0.020171 seconds
---time factor differentialExtacticCurve(omegaQQ,2)
+time factor differentialExtacticCurve(omegaQQ,2)
 -- not zero
--- used 44.3378 seconds
+-- used 6.90952s (cpu); 0.144962s (thread); 0s (gc)
 time eM = differentialExtacticMatrix(omegaQQ,2);
 -- used 0.055139 seconds
 use dQQ
 time det sub(eM,{x=>1,y=>2})
 -- 273805687756800000 (not 0)
 -- used 0.015646 seconds
--- the second extactic curve is therefore also nonzero
+-- the second extactic curve is therefore also nonzero,
+-- and there can only be finitely many factors
 
 -- second check for infinitely many algebraic integral curves
 darbouxInfinitelyManyCurves(omegaQQ,Q)
@@ -137,11 +138,11 @@ omegaNorm = (differentialNormalizeIfPossible(sub(omegaQQ,dFp)))#0
 
 -- test: do the first 20 focal values vanish?
 time assert (toList(20:0) == frommer(omegaNorm,20))
--- used 1.06636 seconds
+-- used 0.533969s (cpu); 0.0109524s (thread); 0s (gc)
 
 -- test: is this a smooth point on the component?
 time assert (9==rank frommerJacobian(omegaNorm,11))
--- used 23.9294 seconds
+ -- used 7.28628s (cpu); 0.162498s (thread); 0s (gc)
 
 
 

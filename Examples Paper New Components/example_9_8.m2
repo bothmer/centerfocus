@@ -88,15 +88,14 @@ assert (omegaQQ == darbouxSyzToDifferential(sN3,dQQ))
 -- evaluate cofactors and domega in special points
 -- and at a general point at infinity
 eval = darbouxEvalCofactorDiffQQ(points|{ideal(x,z)},sN3)
--- | 0  -6 5  |
--- | -2 -2 3  |
--- | 0  6  -5 |
--- | 0  6  -5 |
--- | -1 -4 4  |
-
+-- | 0 6 5 |
+-- | 2 2 3 |
+-- | 0 6 5 |
+-- | 0 6 5 |
+-- | 1 4 4 |
 syz eval
--- | 4 |
--- | 5 |
+-- | -4 |
+-- | -5 |
 -- | 6 |
 
 -- Since 4 K_L + 5 K_C + 6 dw contains the line at infinity we
@@ -115,13 +114,16 @@ omegaNorm = (differentialNormalizeIfPossible(sub(omegaQQ,dFp)))#0
 
 -- test: do the first 20 focal values vanish?
 time assert (toList(20:0) == frommer(omegaNorm,20))
--- used 1.06636 seconds
+-- used 0.516453s (cpu); 0.0116301s (thread); 0s (gc)
 
 -- test: is this a smooth point on the component?
 time assert (9==rank frommerJacobian(omegaNorm,11))
--- used 23.9294 seconds
+-- used 7.06327s (cpu); 0.156905s (thread); 0s (gc)
 
--- test: not infinitely many algebraic integral curves
+-- go back to char 0
+use RhomQQ
+
+-- TEST: not infinitely many algebraic integral curves
 --       of degree 4
 assert not first darbouxInfinitelyManyCurves(omegaQQ,C)
 
@@ -130,7 +132,10 @@ time factor time differentialExtacticCurve(omegaQQ,2)
 Q = -2*x^2-3*x*y+y^2-2*x+y
 D = (-9*x^2-x*y+y^2-x+y)*(x+1)
 
--- infinitely many 6-tic curves
+-- infinitely many 6-tic curves (over QQ)
 first darbouxInfinitelyManyCurves(omegaQQ,C*L^2)
 first darbouxInfinitelyManyCurves(omegaQQ,Q^3)
-first darbouxInfinitelyManyCurves(omegaQQ,D^3)
+first darbouxInfinitelyManyCurves(omegaQQ,D^2)
+
+-- not infinitely many 5-tic curves (over QQ)
+first darbouxInfinitelyManyCurves(omegaQQ,Q*D)

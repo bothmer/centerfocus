@@ -127,12 +127,10 @@ darbouxInfinitelyManyCurves(omegaQQ,Q)
 assert not first darbouxInfinitelyManyCurves(omegaQQ,Q)
 
 -- infinitely many differential curves of degree 15
-first darbouxInfinitelyManyCurves(omegaQQ,L2^5*L3^2*Q^4)
-first darbouxInfinitelyManyCurves(omegaQQ,L1^9*sub(z^6,RhomQQ))
+assert first darbouxInfinitelyManyCurves(omegaQQ,L2^5*L3^2*Q^4)
+assert first darbouxInfinitelyManyCurves(omegaQQ,L1^9*sub(z^6,RhomQQ))
 C13 = (L2^5*L3^2*Q^4-L1^9*sub(z^6,RhomQQ))//L4^2;
-first darbouxInfinitelyManyCurves(omegaQQ,C13*L4^2)
+assert first darbouxInfinitelyManyCurves(omegaQQ,C13*L4^2)
 
--- decomposibility mod P
-primes = select(10..100,isPrime)
 
 	  

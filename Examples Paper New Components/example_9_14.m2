@@ -84,7 +84,7 @@ assert (codim singularLocus ideal Q2 >= 3)
 -- so t >= 11 (calculation below shows t=11)
 
 
--- test: is the expected number of degree 3 syzygies really 1?
+-- TEST: is the expected number of degree 3 syzygies really 1?
 assert (darbouxExpectedSyzygies(darbouxMatrix({Ctotal}),3) == 1)
 -- test: is the configuration generic in the sense of 
 -- Proposition 3.7 of the paper?
@@ -100,16 +100,16 @@ assert (omegaQQ == darbouxSyzToDifferential(s,dQQ))
 -- evaluate cofactors and domega in C,D,E,F,G,J
 -- and at a general point at infinity
 eval = darbouxEvalCofactorDiffQQ(points_{2..7},s)
--- | -1 1  |
--- | 1  -1 |
--- | -1 1  |
--- | 1  -1 |
--- | 1  -1 |
--- | -1 1  |
+-- | 1 1 |
+-- | 1 1 |
+-- | 1 1 |
+-- | 1 1 |
+-- | 1 1 |
+-- | 1 1 |
 
 
 syz eval
--- | 1 |
+-- | -1 |
 -- | 1 |
 
 -- check that C,D,E,F,G,J are in general position 
@@ -133,11 +133,14 @@ time assert (toList(20:0) == frommer(omegaNorm,20))
 
 -- test: is this a smooth point on the component?
 time assert (9==rank frommerJacobian(omegaNorm,11))
--- used 23.9294 seconds
-
+ -- used 7.28505s (cpu); 0.161927s (thread); 0s (gc)
+ 
 -- test: not infinitely many algebraic integral curves
 --       of degree 2
 assert not first darbouxInfinitelyManyCurves(omegaQQ,Q1)
+
+-- back to char 0
+use RhomQQ
 
 -- this differential form even has a rational integrla
 -- of degree 4
@@ -149,6 +152,15 @@ G = L^2*Q2
 -- of integral curves?
 assert first darbouxInfinitelyManyCurves(omegaQQ,F)
 assert first darbouxInfinitelyManyCurves(omegaQQ,G)
+
+-- affine versions of the integral curves of degree 4
+Faffine = sub(F,z=>1)
+Gaffine = sub(G,z=>1)
+
+-- the cofactors are the same, but nonzero. Therefore
+-- these differential forms are not Hamiltonian.
+darbouxCofactor(omegaQQ,Faffine)
+darbouxCofactor(omegaQQ,Gaffine)
 
 -- two singular points of the general fiber
 Jgeneral = ideal jacobian ideal(F*random(QQ)+G*random(QQ));

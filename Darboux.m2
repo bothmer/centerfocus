@@ -402,8 +402,9 @@ reduceQQmatrix = (m) -> (gcd flatten entries sub(last coefficients m,QQ))^-1*m
 -- assumes everything over QQ
 darbouxEvalCofactorDiffQQ = (points,s) -> (
        DCM := darbouxCofactorDiff(s);
-       matrix apply(points,P->flatten entries reduceQQmatrix sub(DCM,coordinates P)
-	    )
+       Meval := matrix apply(points,P->flatten entries reduceQQmatrix sub(DCM,coordinates P));
+       signs := apply(rank target Meval,i->if (sub(Meval_(rank source Meval-1)_i,QQ)<0  ) then -1 else 1);
+       (diagonalMatrix signs) * Meval
        )
 
 ----------------------
@@ -1574,8 +1575,11 @@ doc ///
 	    determined by the geometry of the integral curves of the given
 	    differential form \omega = Pdx+Qdy. 
 	    
-	    Indeed for a local equation x^a-y^b we obtain (K:d\omega)=(a*b:-a-b).
-	    	    
+	    Indeed for a local equation x^a-y^b we obtain (K:d\omega)=(a*b:a+b).
+
+            If the value of d\omega is negative for some point, all values for
+            this point are multiplied by -1 (for better readablity).
+            
 	    As a first example we look at a cusp:	    
        Example
 	   R = QQ[x,y,z]
@@ -1584,7 +1588,7 @@ doc ///
 	   darbouxEvalCofactorDiffQQ({ideal(x,y)},syzM)	   
        Text
            If two integral curves intersect b-fold tangent as 
-	   (x+y^b) and (x-y^b) we obtain (K_1:K_2:dw) = (b:b:-b-1).
+	   (x+y^b) and (x-y^b) we obtain (K_1:K_2:dw) = (b:b:b+1).
 	   For ordinary tangents we get:
        Example
 --       	   dQQ = differentialRing QQ

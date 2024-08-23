@@ -82,12 +82,12 @@ assert (omegaQQ2 == darbouxSyzToDifferential(s,dQQ))
 -- evaluate cofactors and domega in special points
 -- and at a general point at infinity
 eval = darbouxEvalCofactorDiffQQ(points_{0,2,3},s)
--- | 6  -5 |
--- | -6 5  |
--- | -6 5  |
+-- | 6 5 |
+-- | 6 5 |
+-- | 6 5 |
 
 syz eval
--- | 5 |
+-- | -5 |
 -- | 6 |
 
 -- Since omega is (x+1)*degree 2 it is enough to
@@ -106,11 +106,11 @@ omegaNorm = (differentialNormalizeIfPossible(sub(omegaQQ,dFp)))#0
 
 -- test: do the first 20 focal values vanish?
 time assert (toList(20:0) == frommer(omegaNorm,20))
--- used 1.06636 seconds
+-- used 0.572519s (cpu); 0.0118897s (thread); 0s (gc)
 
 -- test: is this a smooth point on the component?
 time assert (9==rank frommerJacobian(omegaNorm,11))
--- used 23.9294 seconds
+-- used 7.16829s (cpu); 0.159274s (thread); 0s (gc)
 
 -- test: not infinitely many algebraic integral curves
 --       of degree 4
@@ -127,4 +127,20 @@ first darbouxInfinitelyManyCurves(omegaQQ,D^2)
 first darbouxInfinitelyManyCurves(omegaQQ,C*z^2)
 
 
+--make a syzygy from omega and the other cofactors
+sQD = darbouxDiffToSyz(omegaQQ2,{Q,D})
+-- test: does the syzygy indeed represent omega?
+assert (omegaQQ2 == darbouxSyzToDifferential(sQD,dQQ))
 
+pointsQD = decompose ideal(diff(matrix{{x,y}},matrix{{Q*D}}),Q*D)
+
+-- evaluate cofactors and domega in special points
+-- and at a general point at infinity
+evalQD = darbouxEvalCofactorDiffQQ(pointsQD_{0,1,2,3},sQD)
+-- | 2 3 5 |
+-- | 2 3 5 |
+-- | 2 3 5 |
+-- | 2 3 5 |
+
+-- these are special conditions not considered in the paper
+-- (possibly: a smooth curve tangent to second curve in a weierstrass point)

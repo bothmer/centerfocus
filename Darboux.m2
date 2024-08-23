@@ -1726,16 +1726,26 @@ doc ///
 	  cofactor. Given one irreducible integral curve F
 	  the existence of further curves with the same cofactor
 	  is a linear condition which is checked in this function.
-	  The other integral curves in this family are also calculated,
-	  if such a family exist.
+	  Generators of this family are also calculated.
        Example
        	  dQQ = differentialRing QQ;
 	  F = x*y+y^2+x+y+1
 	  G = x^2-2*x*y-x+2*y+1
 	  dF = differentialD(F)
 	  dG = differentialD(G)
+       Text
+          dF*G-F*dG has integral curves aF+bG, all of them with cofactor dFdG.
+       Example
      	  darbouxInfinitelyManyCurves(dF*G-F*dG,F)
+       Text
+          dF*G+F*dG hat integral curves F and G, with cofactor dFdG and -dFdG. The linear
+          combinations of F and G are not integral curves:
+       Example
      	  darbouxInfinitelyManyCurves(dF*G+F*dG,F)
+       Text
+          the same differential form has integral curves F*G+a with a constant,
+          all of them with cofactor 0.
+       Example
      	  darbouxInfinitelyManyCurves(dF*G+F*dG,F*G)
      Caveat
           It is not checked wether F is irreducible. If

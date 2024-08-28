@@ -386,7 +386,7 @@ coordinates = (point) -> transpose syz transpose jacobian point
 
 -- find common factor of coefficients 
 -- and divide
-reduceQQmatrix = (m) -> (gcd flatten entries sub(last coefficients m,QQ))^-1*m
+reduceQQmatrix = (m) -> if m==0 then sub(m,QQ) else (gcd flatten entries sub(last coefficients m,QQ))^-1*m
 
 
 -- substitute a list of points into the cofactor|d\omega matrix

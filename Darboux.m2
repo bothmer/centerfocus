@@ -16,7 +16,7 @@ newPackage(
      },
      Headline => "Darboux Integrability",
      DebuggingMode => false,
-     CacheExampleOutput => true,
+     CacheExampleOutput => false,
      AuxiliaryFiles => true
      )
 
@@ -518,7 +518,7 @@ doc ///
         Text
             This package checks Darboux integrability
 	    for plane autonomous systems and 
-	    helps to construct Darboux integrable systems. $d\omega$
+	    helps to construct Darboux integrable systems.
 ///
 
 
@@ -1111,7 +1111,7 @@ doc ///
          omega = P*dx + Q*dy;
          C = x+y;
          K = darbouxCofactor(omega,C);
-h         Rhom = differentialHomCommutativePart dFp;
+         Rhom = differentialHomCommutativePart dFp;
          Khom = homogenize(sub(contract(dx*dy,K),Rhom),z);
          domegaHom = homogenize(sub(contract(dx*dy,differentialD(omega)),Rhom),z);
          s = darbouxDiffToSyz(omega,{C});
@@ -2057,8 +2057,8 @@ doc ///
 	  Rhom = differentialHomCommutativePart dQQ;
 	  curves = {x^2-y*z,x+y};
 	  s = darbouxDiffToSyz(omega,curves);
-          K0 = contract(dx*dy,darbouxCofactor(omega,sub(curves#0,{z=>1})))
-          K1 = contract(dx*dy,darbouxCofactor(omega,sub(curves#1,{z=>1})))
+          K0 = contract(dx*dy,darbouxCofactor(omega,sub(curves#0,{z=>1})));
+          K1 = contract(dx*dy,darbouxCofactor(omega,sub(curves#1,{z=>1})));
           0==sub(sub(s,z=>1),dQQ) - matrix{{Q},{-P},{-K0},{-K1}}          
 	  )
      ///

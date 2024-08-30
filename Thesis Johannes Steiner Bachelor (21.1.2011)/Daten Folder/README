@@ -1,0 +1,53 @@
+Im Ordner Daten liegen die Ideale, Integralkurven und Punktelisten so, dass sie mit den entsprechenden Funktionen im Package eingelesen werden können.
+
+In den Kodimension x - Unterordnern liegen jeweils:
+-Ideale.m2:
+Liste aller Ideale im Format
+{
+   {Punkt,Ideal},...
+}
+wobei Punkt ein Punkt ist, aus dem das Ideal berechnet wurde. 
+
+
+-Punkte.m2:
+Eine Liste der Form
+{
+   {Punkt,ID},...
+}
+wobei die Punkte im Format {{.,.,.},{.,.,.},{.,.,.,.},{.,.,.,.}} vorliegen und ID eine von der Datenbank vergebene nummer ist.
+
+
+Lifts.m2:
+Eine Liste der Form
+{
+   {Punkt,Lift},...
+}
+wobei Punkte und Lifts im Format {{.,.,.},{.,.,.},{.,.,.,.},{.,.,.,.}} vorliegen.
+
+
+-IndexListe.m2:
+Eine Liste der Form
+{
+   {1,0,....},...
+}
+wobei jeder eintrag für ein Ideal steht und angibt, welche Punkte aus der oben stehenden Liste in V(I) liegen (1) und welche nicht (0).
+
+
+-Komponenten.m2:
+Wie IndexListe, allerdings nicht auf V(I_{i,j}) sondern auf V_{i,j} bezogen.
+
+
+-Integralkurven.m2:
+Liste der Form
+{
+  { --entspricht Komponente
+     {Punkt,IK},...
+  },...
+}
+mit IK={(Integralkurve,Kofaktor),...}
+der i-te Eintrag dieser Liste entspricht V_{c,i}
+
+
+Die Dateien enthalten nur den String, der mit toString() erzeugt wurde, deshalb werden sie am besten mit 
+value get "./Pfad"
+eingelesen

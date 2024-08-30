@@ -50,6 +50,7 @@ export {
 exportMutable {}
  
 needsPackage"CenterFocus"
+needsPackage"SimpleDoc"
     
 -- Code here
 
@@ -515,7 +516,7 @@ doc ///
         Text
             This package checks Darboux integrability
 	    for plane autonomous systems and 
-	    helps to construct Darboux integrable systems.
+	    helps to construct Darboux integrable systems. $d\omega$
 ///
 
 

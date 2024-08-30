@@ -1646,12 +1646,14 @@ doc ///
      	  m = coordinates I
      Inputs
      	  I: Ideal
-	     of linear equations defining a point
+	     of homogeneous linear equations defining a point
      Outputs
      	  m: Matrix
 	     The coordinates of the point
      Consequences
-     Description        
+     Description
+       Text
+            Get the coordinates of a point from its homogeneous ideal. 
        Example
        	    R = QQ[x,y,z]
 	    I = ideal(x-y,x+y+z)
@@ -1660,8 +1662,9 @@ doc ///
      Caveat
           Does not check whether the ideal really defines
 	  a reduced point.
+
+          Does not work for affine equations.
      SeeAlso
-     	  CenterFocus
      ///
 
      TEST ///
@@ -1689,22 +1692,24 @@ doc ///
      Consequences
      Description
        Text
-       	  It works with polynomials over QQ with coefficients in ZZ
+          Given a matrix of polynomials with coefficients
+          over $\ZZ$, 
+          divide by the gcd of all coefficients:
        Example
        	  R = QQ[x,y,z]
 	  M = matrix{{ 4*x+6*y, 8*z},{10*y^2,10*z^2}}
 	  reduceQQmatrix M
        Text
-          But also with coefficients in QQ
+          If the coefficients are in $\QQ$ multiply by the
+          common denomiator first.
        Example
        	  R = QQ[x,y,z]
 	  M = matrix{{ 4*x+6*y, 8/3*z},{10*y^2,10*z^2}}
 	  reduceQQmatrix M
      Caveat
-     	Does not work for polynomials over ZZ or for matrices over
+     	Does not work for polynomials over $\ZZ$ or for matrices over
 	a field (not a ring)
      SeeAlso
-     	  CenterFocus
      ///
 
      TEST ///
@@ -1724,35 +1729,51 @@ doc ///
      	  M = darbouxEvalCofactorDiffQQ(points,s)
      Inputs
      	  points: List
-	     of ideals of points
+	     of ideals of points ${I_1,\dots,I_k}$
           s: Matrix
-	     a homogeneous syzygy \{\{Q\},\{ -P\},\{K_1\},...,\{K_r\}\} of a Darboux Matrix
+	     a homogeneous syzygy $(Q,-P,-K_1,...,-K_r)^t$ of a Darboux Matrix
      Outputs
      	  M: Matrix
-	      (#points x (r+1)) matrix of values of cofactors and d\omega
-     	      rows: points, cols: K_1..K_r,d\omega
+	      over $\QQ$.
      Consequences
      Description
        Text
-       	    The value of the cofactors K_i and d\omega at special points is often
-	    determined by the geometry of the integral curves of the given
-	    differential form \omega = Pdx+Qdy. 
-	    
-	    Indeed for a local equation x^a-y^b we obtain (K:d\omega)=(a*b:a+b).
+            Computes the matrix
+            $$
+             \begin{pmatrix}
+             K_1(P_1) & \dots & K_r(P_1) & d\omega(P_1) \\
+             \vdots & & \vdots & \vdots \\
+             K_1(P_k) & \dots & K_r(P_k) & d\omega(P_k) \\
+             \end{pmatrix}
+            $$
+            where $P_1,\dots,P_k$ are the points defined by
+            the ideals $I_1,\dots,I_k$ and $ \omega = Pdx+Qdy$.
 
             If the value of d\omega is negative for some point, all values for
             this point are multiplied by -1 (for better readablity).
-            
-	    As a first example we look at a cusp:	    
+             
+       	    The values of the cofactors $K_i$ and $d\omega$ at special points is often
+	    determined by the geometry of the integral curves of the given
+	    differential form.
+	    Indeed for an integral curve with local equation $x^a-y^b$ we obtain $(K:d\omega)=(ab:a+b)$.
+
+	    As a first example we look at a cusp. It has local
+            equation $x^2-y^3$ so we expect values
+            $$
+            \bigl(K(0):d\omega(0)\bigr) =(ab:a+b) = (6:5)
+            $$
        Example
 	   R = QQ[x,y,z]
      	   M = darbouxMatrix{x^2*z-y^3}	    
      	   syzM = (syz M)_{0}    
 	   darbouxEvalCofactorDiffQQ({ideal(x,y)},syzM)	   
        Text
-           If two integral curves intersect b-fold tangent as 
-	   (x+y^b) and (x-y^b) we obtain (K_1:K_2:dw) = (b:b:b+1).
-	   For ordinary tangents we get:
+           If two integral curves intersect $b$-fold tangent as 
+	   $(x+y^b)$ and $(x-y^b)$ we obtain
+           $$
+           \bigl(K_1(0):K_2(0):d\omega(0)\bigr) = (b:b:b+1).
+           $$ 
+           For ordinary tangents we get:
        Example
 --       	   dQQ = differentialRing QQ
 --	   R = differentialHomCommutativePart dQQ
@@ -1791,7 +1812,7 @@ doc ///
      	  C: RingElement
 	     a possibly very singular and reducible curve
 	  t: ZZ
-	     the expected degree of C=C_x=C_y=0  
+	     the expected degree of $C=C_x=C_y=0$  
 	  e: ZZ
 	     the degree of the differential forms to be constructed
      Outputs
@@ -1800,26 +1821,53 @@ doc ///
      Consequences
      Description
        Text
-       	  Consider a family of curve configurations with assigned
-	  singularities of Turina (???) number t, and an element C
-	  of this family and X the finite scheme defined by C=C_x=C_y=0.
+       	  Consider a family of possibly reducible curves with assigned
+	  singularities of total Tjurina number $t$, and an element $C$
+	  of this family and $X$ the finite scheme defined by $C=C_x=C_y=0$.
 	  If
 
-	   (1) the degree of X is equal to t
-	   
-	   (2) the number of syzygies of the darboux matrix of C in degree e is as expected
-	   
-	   (3) h^1(I_X(t+e-1)) = 0
+	      (1) the degree of $X$ is equal to $t$
+              
+	      (2) the number of syzygies of the darboux matrix of $C$ in degree $e$ is as expected
+              
+	      (3) $h^1(I_X(t+e-1)) = 0$
 
-          then there is an open part of the family of curve configurations
-	  that whose Darboux matrix has the expected number of syzygies.
+          then there is an open part of the family of curves
+	  whose Darboux matrix has the expected number of syzygies.
 
-	  This is used to construct families of Darboux integrable
-	  integral forms. (The Darboux integrability has to be checked
-	  differently)
+	  This is used to construct families differential forms
+          with assigned integral curves.
+
+          As an example we consider the 3 cuspidal quartics that are
+          tangent to the line at infinity. Here is one example:
+       Example
+           R = QQ[x,y,z];
+           w =  1/8*(x+y-z);
+           C =  x^2*y^2-2*x^2*y*w-2*x*y^2*w+x^2*w^2-2*x*y*w^2+y^2*w^2;
+       Text
+           The expected Tjuringa number is $2$ at every cusp and
+           $1$ at the tangent point at infinity. Therefore $t=7$.
+           Indeed:
+       Example
+            t = degree ideal(C,diff(x,C),diff(y,C))
+       Text
+            Lets compute expected number of syzygies
+            of the Darboux matrix of this curve:
+       Example
+            M = darbouxMatrix({C});
+            darbouxExpectedSyzygies(M,2)
+       Text
+            Now lets check if this example is generic in the family:
+       Example
+            isDarbouxCurveConfigurationGeneric(C,t,2)
+       Text
+            This shows that almost all
+            3 cuspidal quartics tangent to the line
+            at infinity, have a Darboux matrix with exactly one degree 2
+            syzygy.           
      Caveat
-       To prove the vanishing of h^1 the Castelnuovo-Mumford regularity
-       is used. If this criterium fails h^1=0 might still be possible.
+       To prove the vanishing of $h^1$ the Castelnuovo-Mumford regularity
+       is used. If this criterium fails $h^1=0$ might still be possible.
      SeeAlso
      	  darbouxMatrix
      ///
@@ -1836,22 +1884,24 @@ doc ///
      	  L = darbouxTangentLine(P,C)
      Inputs
      	  P: Ideal
-	     of a point in IP^2
+	     of a point in $\PP^2$
 	  C: RingElement
-	     the equation of a curve in IP^2
+	     the equation of a curve in $\PP^2$
      Outputs
      	  L: RingElement
-	     the equation of the tangent line to C in P
+	     the equation of the tangent line to $C$ in $P$
      Description
+       Text
+            Computes the tangent line of a curve $C$ as a point $P$.
        Example
        	    R = QQ[x,y,z];
 	    C = x^2-y*z;
 	    darbouxTangentLine(ideal(x,y),C)
 	    darbouxTangentLine(ideal(x-z,y-z),C)
      Caveat
-     	  Assumes that P does not lie on a line component of C. 
+     	  Assumes that $P$ does not lie on a line component of $C$. 
 	  If this is so, an error "assertion failed" is produced.
-	  If P does not lie on the curve the same error is produced.
+	  If $P$ does not lie on the curve the same error is produced.
      SeeAlso
      	  coordinates
      ///
@@ -1886,11 +1936,11 @@ doc ///
 	     and cofactor as F
      Description
        Text
-          If a differential form has an irreducible curve of
-	  degree d it has infinitely many such curves if and only
-	  if it has a rational first integral of degree n. In
+          If a differential form has an irreducible integral curve of
+	  degree $n$ it has infinitely many such curves if and only
+	  if it has a rational first integral of degree $n$. In
 	  particular all curves in this family have the same
-	  cofactor. Given one irreducible integral curve F
+	  cofactor. Given one irreducible integral curve $F$
 	  the existence of further curves with the same cofactor
 	  is a linear condition which is checked in this function.
 	  Generators of this family are also calculated.
@@ -1901,22 +1951,26 @@ doc ///
 	  dF = differentialD(F)
 	  dG = differentialD(G)
        Text
-          dF*G-F*dG has integral curves aF+bG, all of them with cofactor dFdG.
+          $dF\cdot G-F\cdot dG$ has integral curves $aF+bG$,
+          all of them with cofactor $dF \wedge dG$.
        Example
      	  darbouxInfinitelyManyCurves(dF*G-F*dG,F)
        Text
-          dF*G+F*dG hat integral curves F and G, with cofactor dFdG and -dFdG. The linear
-          combinations of F and G are not integral curves:
+          $dF \cdot G+F \cdot dG$ has integral curves $F$ and $G$,
+          with cofactor $dF \wedge dG$ and $-dF \wedge dG$.
+          The linear
+          combinations of $F$ and $G$ are not integral curves:
        Example
      	  darbouxInfinitelyManyCurves(dF*G+F*dG,F)
        Text
-          the same differential form has integral curves F*G+a with a constant,
-          all of them with cofactor 0.
+          the same differential form has
+          integral curves $FG+a$ with a constant,
+          all of them with cofactor $0$.
        Example
      	  darbouxInfinitelyManyCurves(dF*G+F*dG,F*G)
      Caveat
-          It is not checked whether F is irreducible. If
-	  F is not an integral curve of omega an error is produced.
+          It is not checked whether $F$ is irreducible. If
+	  $F$ is not an integral curve of $\omega$ an error is produced.
      SeeAlso
 	  differentialRing
      	  differentialD
@@ -1946,16 +2000,18 @@ doc ///
      	  s = darbouxDiffToSyz(omega,curves)
      Inputs
      	  omega: RingElement
-	     a differential form
+	     a differential form (affine)
 	  curves: List
-	     of integral curves
+	     of integral curves (homogeneous)
      Outputs
      	  s: Matrix
-	     of the form (Q,-P,-K_1,..,-K_n)^t 
+	     of the form $(Q,-P,-K_1,..,-K_n)^t$ 
      Description
        Text
-       	  From \omega = Pdx + Qdy and a list of curves {C_1,..,C_k} calculate
-	  the cofactors {K_1,..,K_k} and make a matrix (Q,-P,-K_1,..,-K_n)^t that is a 
+       	  From $\omega = Pdx + Qdy$ and a list of
+          curves $\{C_1,..,C_k\}$ calculate
+	  the cofactors $\{K_1,\dots,K_k\}$ and
+          make a matrix $(Q,-P,-K_1,..,-K_n)^t$ that is a 
 	  syzygy of the Darboux matrix defined by the same list
 	  of curves.
        Example
@@ -1964,15 +2020,15 @@ doc ///
           Q = 2*x*y-x+y
 	  omega = P*dx+Q*dy
 	  Rhom = differentialHomCommutativePart dQQ
-	  curves = {x^2-y,x+y};
+	  curves = {x^2-y*z,x+y};
 	  s = darbouxDiffToSyz(omega,curves)
 	  M = darbouxMatrix(curves)
      	  M*s
        Text
-          We check also the signs
+          We check also if the syzygy contains the correct entries:
        Example
-          K0 = contract(dx*dy,darbouxCofactor(omega,curves#0))
-          K1 = contract(dx*dy,darbouxCofactor(omega,curves#1))
+          K0 = contract(dx*dy,darbouxCofactor(omega,sub(curves#0,{z=>1})))
+          K1 = contract(dx*dy,darbouxCofactor(omega,sub(curves#1,{z=>1})))
           sub(sub(s,z=>1),dQQ) - matrix{{Q},{-P},{-K0},{-K1}}          
      SeeAlso
      	  differentialRing
@@ -1999,10 +2055,10 @@ doc ///
           Q = 2*x*y-x+y;
 	  omega = P*dx+Q*dy;
 	  Rhom = differentialHomCommutativePart dQQ;
-	  curves = {x^2-y,x+y};
+	  curves = {x^2-y*z,x+y};
 	  s = darbouxDiffToSyz(omega,curves);
-          K0 = contract(dx*dy,darbouxCofactor(omega,curves#0));
-          K1 = contract(dx*dy,darbouxCofactor(omega,curves#1));
+          K0 = contract(dx*dy,darbouxCofactor(omega,sub(curves#0,{z=>1})))
+          K1 = contract(dx*dy,darbouxCofactor(omega,sub(curves#1,{z=>1})))
           0==sub(sub(s,z=>1),dQQ) - matrix{{Q},{-P},{-K0},{-K1}}          
 	  )
      ///

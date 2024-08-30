@@ -15,7 +15,9 @@ newPackage(
          }   
      },
      Headline => "Darboux Integrability",
-     DebuggingMode => true
+     DebuggingMode => false,
+     CacheExampleOutput => true,
+     AuxiliaryFiles => true
      )
 
 export {
@@ -535,17 +537,40 @@ doc ///
 	     the Darboux Matrix for the given set of integral curves
      Description
        Text
-       	    For given homogeneous polynomials F_1...F_n this function 
-	    constructs the matrix \{\{F_{1x},F_{1y},F_1,0,..,0\},..,\{F_{nx},F_{ny},0...0,F_n\}\}.
-	    The elements of the kernel of this matrix are in 1:1 correspondence
-	    with plane autonomous systems that have algebraic integral curves
-	    C_i = \{F_i=0\}.
+       	    For given homogeneous polynomials $F_1,\dots,F_n$ this function 
+	    constructs the matrix
+            $$
+             \begin{pmatrix}
+             F_{1x} & F_{1y} & F_1   \\
+             \vdots & \vdots &  & \ddots \\
+            F_{nx} & F_{ny} &  & & F_n
+             \end{pmatrix}
+            $$
+	    The syzygies $(Q,-P,-K_1,\dots,-K_n)^t$ of this matrix are in 1:1 correspondence
+	    with differential forms $Pdx - Qdy$ that have algebraic integral curves
+	    $C_i := \{F_i=0\}$ with cofactors $K_i$.
        Example
-       	    R = QQ[x,y,z]
+            dQQ = differentialRing QQ;
+            R = differentialHomCommutativePart dQQ;
 	    M = darbouxMatrix{x^2-y*z,x+y}
-	    super basis(2,ker M)
+	    s = syz M
+       Text
+            The differential form corresponding to the first syzygy is
+       Example
+            use dQQ;
+            omega = darbouxSyzToDifferential(s_{0},dQQ)
+       Text
+            We check that $\omega$ does indeed have $x^2-y$
+            as an integral curve with the cofactor from the syzygy:
+       Example
+            K = -sub(sub(s_0_2,z=>1),dQQ)*dx*dy
+            differentialD(x^2-y)*omega == K*(x^2-y)
+       Text
+            There is also a direct way to obtain the cofactor:
+       Example
+            darbouxCofactor(omega,x^2-y)
      Caveat
-       	    the ring used in L must contain the variables x and y.
+       	    the ring used to define the curves must contain the variables x and y.
      SeeAlso
           Darboux
 	  darbouxSyzToDifferential
@@ -571,18 +596,27 @@ doc ///
 	     the differential form
      Description
        Text
-       	    From a given syzygy (Q,-P,K_1,\dots,K_n)^t of a Darboux matrix construct 
-	    the differntial form Pdx+Qdy in the ring dR. The syzygy is expected
+       	    From a given syzygy $(Q,-P,-K_1,\dots,-K_n)^t$ of a Darboux matrix construct 
+	    the differntial form $Pdx+Qdy$ in the ring dR. The syzygy is expected
 	    to be homogeneous in variables named x,y,z. The differential form
 	    will be dehomogenized with variables x,y.
+
+            We start by constructing a syzygy from a Darboux matrix
        Example
-       	    Fp = ZZ/29
-	    dFp = differentialRing Fp
-	    R = differentialHomCommutativePart dFp
+       	    Fp = ZZ/29;
+	    dFp = differentialRing Fp;
+	    R = differentialHomCommutativePart dFp;
 	    M = darbouxMatrix{x^2-y^2+z^2,x+2*y+2*z}
 	    sM = super basis(2,ker M)
 	    s = sM_{1}
+       Text
+            The corresponding differential form is
+       Example
 	    ww = darbouxSyzToDifferential(s,dFp)
+       Text
+            For this differential forms the first 13
+            focal values vanish:
+       Example
 	    wwNorm=(differentialNormalizeIfPossible(ww))#0
 	    frommer(wwNorm,13)
      Caveat
@@ -606,20 +640,20 @@ doc ///
      Headline
      	  calculate cofactor of an integral curve
      Usage
-     	  K = darbouxCofactor(omega,Faffine)
+     	  K = darbouxCofactor(omega,F)
      Inputs
      	  omega: RingElement
-	     a differential Form
-	  Faffine: RingElement
+	     a differential form
+	  F: RingElement
 	     the affine equation of an integral curve of omega
      Outputs
      	  K: RingElement
 	     the cofactor of Faffine 
      Description
        Text
-       	    Calculates the cofactor K of an integral curve F=0 of
-	    a differential Form omega. The defining equation for an
-	    integral curve is  dF * omega = K*F. If F does not
+       	    Calculates the cofactor $K$ of an integral curve $F=0$ of
+	    a differential form $\omega$. The defining equation for an
+	    integral curve is  $dF \wedge \omega = F\cdot K$. If $F$ does not
 	    define an integral curve then no cofactor exists and
 	    null is returned
        Example
@@ -660,7 +694,7 @@ doc ///
      	  (M,s) =  darbouxMatrixSyz(L)
      Inputs
      	  L: List
-	     of the form \{nested List of differential form coefficients,\{(curve1,cofactor1),...\}\}
+	     of the form {{nested List of differential form coefficients,{(curve1,cofactor1),...}}
      Outputs
      	  M: Matrix
 	     the Darboux matrix corresponding to the integral curves
@@ -668,18 +702,18 @@ doc ///
 	     the Syzygy corresponding to the differential form and cofactors
      Description
        Text
-       	    Calculates the Darboux matrix corresponding to 
-	    the given integral curves and a syzygy s of this matrix
+       	    Calculates the Darboux matrix $M$ corresponding to 
+	    the given integral curves and a syzygy $s$ of this matrix
 	    corresponding to the differential form and the
-	    cofactors. The relation M*s=0 then encodes the
-	    integral curve relation dF * omega = K*F. For
+	    cofactors. The relation $M\cdot s=0$ then encodes the
+	    integral curve relation $dF \wedge \omega = F\cdot K$. For
 	    all given integral curves and cofactors.
 	    
 	    The strange format of L is the output format of a fast C++ 
 	    program that finds integral curves over finite fields.
        Example
-       	    Fp = ZZ/29
-            dFp = differentialRing Fp
+       	    Fp = ZZ/29;
+            dFp = differentialRing Fp;
 	    L = {{{16, 2, 14}, {6, 19, 13}, {11, 1, 4, 3}, {4, 27, 11, 23}},
      		 {
 		  (13*x+y-7,-8*x^2*dx*dy+3*x*y*dx*dy+6*y^2*dx*dy-4*x*dx*dy-6*y*dx*dy),
@@ -687,8 +721,18 @@ doc ///
 		  (-5*x+y+2,12*x^2*dx*dy-11*x*y*dx*dy-2*y^2*dx*dy+14*x*dx*dy+12*y*dx*dy),
      		  (-11*x^5+2*x^4*y+12*x^3*y^2+13*x^2*y^3-3*x*y^4+y^5-x^4+12*x^3*y+12*x^2*y^2-3*x*y^3+5*y^4-x^3-12*x^2*y+14*x*y^2-13*y^3+13*x^2+13*x*y-10*y^2+3*x-14*y+4,-7*x^2*dx*dy+10*x*y*dx*dy+3*y^2*dx*dy-11*x*dx*dy+8*y*dx*dy)
 		 }};
-	    (M,s) = darbouxMatrixSyz(L)
+	    (M,s) = darbouxMatrixSyz(L);
 	    M*s
+       Text
+            As a sanity check we look a the differential form
+            defined by this syzygy and check that the first of
+            the above curves is indeed an integral curve with the
+            given cofactor:
+       Example
+            omega = darbouxSyzToDifferential(s,dFp)
+            C = L#1#0#0
+            K = L#1#0#1
+            differentialD(C)*omega == C*K
      Caveat
      SeeAlso
           Darboux
@@ -697,6 +741,25 @@ doc ///
      ///
 
      TEST ///
+         assert(
+            Fp = ZZ/29;
+            dFp = differentialRing Fp;
+	    L = {{{16, 2, 14}, {6, 19, 13}, {11, 1, 4, 3}, {4, 27, 11, 23}},
+     		 {
+		  (13*x+y-7,-8*x^2*dx*dy+3*x*y*dx*dy+6*y^2*dx*dy-4*x*dx*dy-6*y*dx*dy),
+     		  (-5*x^6+8*x^5*y+13*x^4*y^2-3*x^3*y^3+14*x^2*y^4+5*x*y^5+y^6-4*x^5-8*x^4*y+12*x^3*y^2+4*x^2*y^3+10*x*y^4-5*y^5+6*x^4-13*x^3*y+12*x*y^3-9*y^4+5*x^3-3*x^2*y-9*x*y^2+8*y^3-7*x^2+14*x*y+4*y^2+5*x-14*y+2,x^2*dx*dy-x*y*dx*dy+10*y^2*dx*dy+7*x*dx*dy-12*y*dx*dy), 
+		  (-5*x+y+2,12*x^2*dx*dy-11*x*y*dx*dy-2*y^2*dx*dy+14*x*dx*dy+12*y*dx*dy),
+     		  (-11*x^5+2*x^4*y+12*x^3*y^2+13*x^2*y^3-3*x*y^4+y^5-x^4+12*x^3*y+12*x^2*y^2-3*x*y^3+5*y^4-x^3-12*x^2*y+14*x*y^2-13*y^3+13*x^2+13*x*y-10*y^2+3*x-14*y+4,-7*x^2*dx*dy+10*x*y*dx*dy+3*y^2*dx*dy-11*x*dx*dy+8*y*dx*dy)
+		 }};
+	    (M,s) = darbouxMatrixSyz(L);
+            omega = darbouxSyzToDifferential(s,dFp);
+            C = L#1#0#0;
+            K = L#1#0#1;
+            (
+                M*s == 0 and
+                differentialD(C)*omega == C*K
+	    )
+        )             
      ///
 
      doc ///
@@ -717,17 +780,17 @@ doc ///
      Consequences
      Description
        Text
-       	    for a given Darboux matrix M estimates the number 
-	    of degree d syzygies this matrix might have. This 
+       	    Computes the number of degree $d$ syzygies a given Darboux matrix $M$  
+	    is expected to have. This 
 	    is done by assuming that no higher cohomology
-	    occurs. 
+	    occurs.
        Example
 	    R = QQ[x,y,z]
 	    M = darbouxMatrix({x^2-y*z,x+y})
 	    darbouxExpectedSyzygies(M,2)
 	    betti syz M	    
      Caveat
-           Works for any homogeneous n x (n+2) Matrix over IP^2.
+           Works for any homogeneous $n \times (n+2)$ Matrix over $\PP^2$.
      SeeAlso
      	  Darboux
 	  darbouxMatrix
@@ -755,15 +818,15 @@ doc ///
      Consequences
      Description
        Text
-       	    for a given Darboux matrix M calculates the number 
-	    of degree d syzygies this matrix has. 
+       	    Computes the number of degree $d$ syzygies
+            a given Darboux matrix $M$ actually has. 
        Example
 	    R = QQ[x,y,z]
 	    M = darbouxMatrix({x^2-y*z,x+y})
 	    betti syz M	
 	    darbouxNumberSyzygies(M,2)    
      Caveat
-     	  Works for any homogeneous n x (n+2) Matrix over IP^2.
+     	  Works for any homogeneous $n \times (n+2)$ Matrix over $\PP^2$.
      SeeAlso
      	  Darboux
 	  darbouxMatrix
@@ -782,9 +845,68 @@ doc ///
           (F,nextPower) = genericPowerElement(R, d, a, i)
      Inputs
      	  R: Ring
-	     a polynomial ring A[vars]
+	     a polynomial ring
 	  d: ZZ
 	     the degree of the polynomial in R
+	  a: RingElement
+	     an element of degree 0 in the coefficient ring of R
+	  i: ZZ
+	     the power of i used in the first coefficient
+     Outputs
+          F: RingElement
+	     a polynomial of degree deg with coefficients powers of a
+	  nextPower : ZZ
+	     the first unused power of a   
+     Consequences
+     Description
+       Text
+          Makes a polynomial
+          $$
+          \sum_{j=0}^{k} a^{i+j}m_j
+          $$
+          where $m_1,\dots,m_k$ is the set of monomials of degree $d$
+          in $R$ and $a$ is an element in the coefficient ring of $R$.
+          Returns also the number $i+k+1$.
+          
+	  This is sometimes useful to avoid using a
+          large number of variables
+	  in tangent space calculations.
+       Example
+          A = QQ[a, Degrees => {0}]	
+	  R = A[x,y,z, Join => false]
+	  (g,i) = genericPowerElement(R, 2, a,1)
+	  coefficients(g)
+     Caveat
+     	  The variable $a$ should be of degree 0.
+     SeeAlso
+     	  Darboux
+	  genericPowerElementAffine
+	  genericPowerMatrix
+     ///
+
+     TEST ///
+         assert(
+              A = QQ[a, Degrees => {0}];
+              R = A[x,y,z, Join => false];
+              (
+                  genericPowerElement(R, 2, a,1)
+                  == (a^1*x^2+a^2*x*y+a^3*y^2+a^4*x*z+a^5*y*z+a^6*z^2,7)
+              )
+          )
+     ///
+
+   doc ///
+     Key
+     	  genericPowerElementAffine
+     Headline
+     	  make affine polynomials with powers of a variable as coefficients
+     Usage
+          (F,nextPower) = genericPowerElement(R, degs, a, i)
+     Inputs
+     	  R: Ring
+	     a polynomial ring A[vars]
+	  degs: List
+	     a list degrees occuring in the affine polynomials
 	  a: RingElement
 	     an element of degree 0 in the coefficient ring of R
 	  i: ZZ
@@ -797,25 +919,41 @@ doc ///
      Consequences
      Description
        Text
-          make a generic polynomial of degree d with powers of the variable a as coefficients.
-	  This is sometimes useful to avoid using a large number of variables
+          Makes an affine polynomial
+          $$
+          \sum_{j=0}^{k} a^{i+j}m_j
+          $$
+          where $m_1,\dots,m_k$ is the set of monomials in $R$ whose degree is
+          in the given list.
+          $a$ is an element in the coefficient ring of $R$.
+          Returns also the number $i+k+1$.
+
+          This is sometimes useful to avoid using a large number of variables
 	  in tangent space calculations.
        Example
           A = QQ[a, Degrees => {0}]	
 	  R = A[x,y,z, Join => false]
-	  (g,i) = genericPowerElement(R, 2, a,1)
+	  (g,i) = genericPowerElementAffine(R, {2,1,0}, a,1)
 	  coefficients(g)
      Caveat
-     	  the variable a should be of degree 0.
+     	  The variable a should be of degree 0.
      SeeAlso
      	  Darboux
-	  genericPowerElementAffine
+	  genericPowerElement
 	  genericPowerMatrix
+	  deformCofactor
+	  deformIntegralCurve
      ///
 
      TEST ///
+         assert(
+          A = QQ[a, Degrees => {0}];	
+	  R = A[x,y,z, Join => false];
+	  (a^1*x+a^2*y+a^3*z+a^4,5) == genericPowerElementAffine(R, {1,0}, a,1)
+        )
      ///
 
+     
     doc ///
      Key
      	  genericPowerMatrix
@@ -836,7 +974,7 @@ doc ///
      Consequences
      Description
        Text
-          make a generic matrix describing a graded Map F <- G with powers of 
+          Makes a generic matrix describing a graded Map $F \leftarrow G$ with powers of 
 	  the variable a as coefficients.
 	  This is sometimes useful to avoid using a large number of variables
 	  in tangent space calculations.
@@ -862,11 +1000,8 @@ doc ///
      Description
        Text
           This can be used to check whether a Darboux integrating 
-	  factor exists.
+	  factor exists. See the links below for examples. 
      SeeAlso
-	  darbouxCofactorCoefficients
-	  darbouxIntegrabilityConditions
-	  darbouxIntegratingFactorConditions  
      ///
 
      TEST ///
@@ -882,28 +1017,38 @@ doc ///
      	  M = darbouxCofactorDiffCoefficients (L)
      Inputs
      	  L: List
-	     \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}
+	     {diffential Form in List format, {{curve1,cofactor1},..}}
      Outputs
      	  M: Matrix
 	     of coefficients
      Consequences
      Description
        Text
-          This can be used to check whether a darboux integrating 
-	  factor using the given integral curves exists, i.e if
-	  the rank of M is at most the number of integral curves.
+          Compute the matrix of coefficients of
+          $$
+              (K_1,\dots,K_r,d\omega)
+          $$
+          where the differential form $\omega$ and the
+          cofactors $K_1,\dots,K_r$ are given in the above list
+          format.
+          
+          If this matrix has rank $\le r$, then $\omega$ has a Darboux
+          integrating factor with respect to the given algebraic integral curves.
 	  
 	  The input format tallies with the output from the C++
 	  version of CenterFocus.
        Example
-           dQQ = differentialRing QQ
-	   omega = x*y*dy+x*dx+y*dy+y^3*dx
-	   omegaPQlist = toPQList(omega)
-	   K = darbouxCofactor(omega,x+1)
-	   darbouxCofactorDiffCoefficients {omegaPQlist,{{x+1,K}}}
+           dQQ = differentialRing QQ;
+	   omega = x*y*dy+x*dx+y*dy+y^3*dx;
+	   omegaPQlist = toPQList(omega);
+	   K = darbouxCofactor(omega,x+1);
 	   (K,differentialD(omega))   
+	   darbouxCofactorDiffCoefficients {omegaPQlist,{{x+1,K}}}
      Caveat
-     	  Assumes that the integral curves are given in a differential ring
+     	  Assumes that the integral curves are given in a differential ring.
+
+          Does not check whether the curves are indeed integral curves
+          of the given differential form with the given cofactor.
 	  
 	  Slow, but works for all rings (this is used when caluclating the
 	  tangent space to the stratum of all differential forms with the
@@ -932,14 +1077,14 @@ doc ///
      	  M = darbouxCofactorDiff(s)
      Inputs
      	  s: Matrix
-	     a homogeneous syzygy (Q,-P,-K_1,...,-K_r)^t of a Darboux Matrix
+	     a homogeneous syzygy $(Q,-P,-K_1,...,-K_r)^t$ of a Darboux Matrix
      Outputs
      	  M: Matrix
-	     1 x (r+1) of cofactors and D(Pdx+Qdy)
+	     $1 \times (r+1)$ of cofactors and $D(Pdx+Qdy)$
      Consequences
      Description
        Text
-          makes a matrix of cofactors and D(omega) from a syzygy of
+          makes a matrix of cofactors and $d\omega$ from a syzygy of
 	  a Darboux matrix. It is not necessary to define a differential
 	  ring to use this function.
        Example
@@ -983,20 +1128,35 @@ doc ///
      	  M = darbouxCofactorDiffCoefficients (s)
      Inputs
      	  s: Matrix
-	     a syzygy \{\{Q\},\{-P\},\{K_1\},...,\{K_r\}\} of a Darboux matrix
+	     a syzygy $(Q,-P,-K_1\,\dots,-K_r)^t$ of a Darboux matrix
      Outputs
      	  M: Matrix
 	     of coefficients
      Consequences
      Description
        Text
-          This can be used to check whether a darboux integrating 
-	  factor using the given integral curves exists, i.e if
-	  the rank of M is at most the number of integral curves.
+          Compute the matrix of coefficients of
+          $$
+              (K_1,\dots,K_r,d\omega)
+          $$
+          where the differential form $\omega$ and the
+          cofactors $K_1,\dots,K_r$ are read from the given syzygy.
+          
+          If this matrix has rank $\le r$, then $\omega$ has a Darboux
+          integrating factor with respect to the given algebraic integral curves.
+
+          Lets construct such a syzygy:
        Example
           R = QQ[x,y,z]
 	  M = darbouxMatrix{x^2-y*z,x+y}
 	  s = (syz M)_{0}
+       Text
+          The cofactors and $d\omega$ are:
+       Example
+          darbouxCofactorDiff(s)
+       Text
+          Their coefficients are:
+       Example
 	  darbouxCofactorDiffCoefficients(s)
      Caveat
           No need to use a differential Ring.
@@ -1021,11 +1181,8 @@ doc ///
      Description
        Text
           This can be used to check whether a Darboux integral 
-	  exists.
+	  exists. See the links below for examples. 
      SeeAlso
-	  darbouxCofactorDiffCoefficients
-	  darbouxIntegrabilityConditions
-	  darbouxIntegratingFactorConditions  
      ///
 
      TEST ///
@@ -1040,16 +1197,23 @@ doc ///
      	  M = darbouxCofactorCoefficients (L)
      Inputs
      	  L: List
-	     \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}
+	     {diffential Form in List format, {{curve1,cofactor1},..}}
      Outputs
      	  M: Matrix
 	     of coefficients
      Consequences
      Description
        Text
-          This can be used to check whether a Darboux integral 
-	  using the given integral curves exists, i.e if
-	  the rank of M is less than the number of integral curves.
+          Compute the matrix of coefficients of
+          $$
+              (K_1,\dots,K_r)
+          $$
+          where the 
+          cofactors $K_1,\dots,K_r$ are given in the above list
+          format.
+          
+          If this matrix has rank $<r$, then $\omega$ has a Darboux
+          integral with respect to the given algebraic integral curves.
 	  
 	  The input format tallies with the output from the C++
 	  version of CenterFocus.
@@ -1096,9 +1260,15 @@ doc ///
      Consequences
      Description
        Text
-          This can be used to check whether a Darboux integral
-	  using the given integral curves exists, i.e if
-	  the rank of M is less than the number of integral curves.
+          Compute the matrix of coefficients of
+          $$
+              (K_1,\dots,K_r)
+          $$
+          where the 
+          cofactors $K_1,\dots,K_r$ are read from the given syzygy.
+          
+          If this matrix has rank $<r$, then $\omega$ has a Darboux
+          integral with respect to the given algebraic integral curves.
        Example
           R = QQ[x,y,z]
 	  M = darbouxMatrix{x^2-y*z,x+y}
@@ -1128,24 +1298,34 @@ doc ///
      	  M = darbouxIntegratingFactorConditions(L)
      Inputs
      	  L: List
-	      \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}
+	      {diffential Form in List format, {{curve1,cofactor1},..}}
      Outputs
      	  M: Matrix
 	     a row of determinantal conditions
      Consequences
      Description
        Text
-       	  calculates the conditions for the existence of an integrating
-	  factor, i.e. that the cofactors and D(omega) are linearly
-	  dependent. This function is particularly useful, if the integral
-	  curves/differentialForm/Cofactors have variable coefficients
+          Computes $(r+1) \times (r+1)$ minors of
+          the matrix of coefficients of
+          $$
+              (K_1,\dots,K_r,d\omega)
+          $$
+          where the differential form $\omega$ and the
+          cofactors $K_1,\dots,K_r$ are given in the list.
+ 
+       	  If all these minors vanish, $\omega$ has a Darboux integrating
+          factor. This function is particularly useful, if the integral
+	  curves/differential form/cofactors have variable coefficients
        Example
            dQQa = differentialRing(QQ[a])
 	   omega = x*y*dy+x*dx+y*dy+a*y^3*dx
 	   omegaPQlist = toPQList(omega)
 	   K = darbouxCofactor(omega,x+1)
 	   darbouxCofactorDiffCoefficients {omegaPQlist,{{x+1,K}}}
-	   darbouxIntegratingFactorConditions {omegaPQlist,{{x+1,K}}} 
+	   darbouxIntegratingFactorConditions {omegaPQlist,{{x+1,K}}}
+       Text
+           So $\omega$ has an integrating factor with respect to
+           $x+1$ if and only if $a=0$.
      SeeAlso
      	  Darboux
 	  hasDarbouxIntegratingFactor
@@ -1166,18 +1346,25 @@ doc ///
      Usage
      	  M = darbouxIntegrabilityConditions(L)
      Inputs
-     	  L: List
-	      \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}
+    	  L: List
+	      {diffential Form in List format, {{curve1,cofactor1},..}}
      Outputs
      	  M: Matrix
 	     a row of determinantal conditions
      Consequences
      Description
        Text
-       	  calculates the conditions for the existence of an integrating
-	  factor, i.e. that the cofactors and D(omega) are linearly
-	  dependent. This function is particularly useful, if the integral
-	  curves/differentialForm/Cofactors have variable coefficients
+          Computes $r \times r$ minors of
+          the matrix of coefficients of
+          $$
+              (K_1,\dots,K_r)
+          $$
+          where the
+          cofactors $K_1,\dots,K_r$ are given in the list.
+ 
+       	  If all these minors vanish, $\omega$ has a Darboux integral.
+          This function is particularly useful, if the integral
+	  curves/differential form/cofactors have variable coefficients
        Example
            dQQa = differentialRing(QQ[a,b])
 	   omega = x*y*dx*b+x*y*dy*a+x*dx+y*dy
@@ -1186,6 +1373,8 @@ doc ///
 	   L = darbouxCofactor(omega,b*y+1)
 	   darbouxCofactorCoefficients {omegaPQlist,{{a*x+1,K},{b*y+1,L}}}
 	   darbouxIntegrabilityConditions {omegaPQlist,{{a*x+1,K},{b*y+1,L}}}
+     Caveat
+          Does not treat empty integral curves defined by $1=0$ correctly. 
      SeeAlso
      	  Darboux
 	  isDarbouxIntegrable
@@ -1208,7 +1397,7 @@ doc ///
      	  b = isDarbouxIntegrable(L)
      Inputs
      	  L: List
-	      \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}
+	      {diffential Form in List format, {{curve1,cofactor1},..}}
      Outputs
      	  b: Boolean
 	      true if the given differential form is Darboux integrable
@@ -1226,6 +1415,8 @@ doc ///
 	   darbouxIntegrabilityConditions {omegaPQlist,{{x+1,K},{y+1,L}}}
            isDarbouxIntegrable{omegaPQlist,{{x+1,K},{y+1,L}}}
      Caveat
+          Does not treat empty integral curves defined by $1=0$
+          correctly. 
      SeeAlso
     	  darbouxIntegrabilityConditions
 	  hasDarbouxIntegratingFactor
@@ -1248,7 +1439,7 @@ doc ///
      	  b =  hasDarbouxIntegratingFactor(L)
      Inputs
      	  L: List
-	      \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}
+	      {diffential Form in List format, {{curve1,cofactor1},..}}
      Outputs
      	  b: Boolean
 	      true if the given differential form has a Darboux integrating factor 
@@ -1267,6 +1458,8 @@ doc ///
 	   -- these are 3x3 minors
            hasDarbouxIntegratingFactor{omegaPQlist,{{x+1,K},{y+1,L}}}
      Caveat
+          Does not treat empty integral curves defined by $1=0$
+          correctly. 
      SeeAlso
     	  darbouxIntegrabilityConditions
 	  isDarbouxIntegrable
@@ -1280,52 +1473,7 @@ doc ///
      TEST ///
      ///
 
-    doc ///
-     Key
-     	  genericPowerElementAffine
-     Headline
-     	  make affine polynomials with powers of a variable as coefficients
-     Usage
-          (F,nextPower) = genericPowerElement(R, degs, a, i)
-     Inputs
-     	  R: Ring
-	     a polynomial ring A[vars]
-	  degs: List
-	     a list degrees occuring in the affine polynomials
-	  a: RingElement
-	     an element of degree 0 in the coefficient ring of R
-	  i: ZZ
-	     the power of i used as first coefficient
-     Outputs
-          F: RingElement
-	     a polynomial of degree deg with coefficients powers of a
-	  nextPower : ZZ
-	     the first unused power of a   
-     Consequences
-     Description
-       Text
-          make a generic affine polynomial as a sum of generic homogeneous polynomials
-	  of degrees degs with powers of the variable a as coefficients.
-	  This is sometimes useful to avoid using a large number of variables
-	  in tangent space calculations.
-       Example
-          A = QQ[a, Degrees => {0}]	
-	  R = A[x,y,z, Join => false]
-	  (g,i) = genericPowerElementAffine(R, {2,1,0}, a,1)
-	  coefficients(g)
-     Caveat
-     	  the variable a should be of degree 0.
-     SeeAlso
-     	  Darboux
-	  genericPowerElement
-	  genericPowerMatrix
-	  deformCofactor
-	  deformIntegralCurve
-     ///
-
-     TEST ///
-     ///
-
+ 
     doc ///
      Key
      	  deformCofactor
@@ -1346,7 +1494,10 @@ doc ///
      Consequences
      Description
        Text
-          make a generic affine cofactor of degree 2 with powers of the variable a as coefficients.
+          Make a generic affine cofactor of degree 2 with powers of the variable a as coefficients.
+          $$
+                (a^ix^{2}+a^{i+1}xy+a^{i+2}y^{2}+a^{i+3}x+a^{i+4}y+a^{i+5}) dx dy
+          $$
 	  This is sometimes useful to avoid using a large number of variables
 	  in tangent space calculations.
        Example
@@ -1387,13 +1538,13 @@ doc ///
      Consequences
      Description
        Text
-          make a generic affine integral curve of degree d with powers of the variable a as coefficients.
+          Make a generic affine integral curve of degree $d$ with powers of the variable a as coefficients.
 	  This is sometimes useful to avoid using a large number of variables
 	  in tangent space calculations.
        Example
           A = QQ[a, Degrees => {0}]
 	  dA = differentialRingNoJoin A	
-	  (g,i) = deformIntegralCurve(3,1,sub(a,dA))
+	  (g,i) = deformIntegralCurve(2,1,sub(a,dA))
 	  coefficients(g,Variables=>{x,y,dx,dy})
      Caveat
      	  the variable a should be of degree 0. Assumes that the
@@ -1416,7 +1567,7 @@ doc ///
           (dimDi,dimDif,dimGeo) = darbouxTangentSpace(L,a)
      Inputs
      	  L: List
-	      \{diffential Form in List format, \{\{curve1,cofactor1\},..\}\}	   
+	      {diffential Form in List format, {{curve1,cofactor1},..}}	   
 	  a: RingElement
 	     an element of degree 0 in the coefficient ring of R
      Outputs
@@ -1425,15 +1576,15 @@ doc ///
           dimDif: ZZ
 	     dim of tangent space to configurations with Darboux integrating factor
           dimDif: ZZ
-	     dim of tangent space to geometric configuration of integral curves	     
+	     dim of tangent space to geometric configuration of integral curves
      Consequences
      Description
        Text
        	  An example from Johannes Steiners ideal 35,11:
        Example
-       	  Fp = ZZ/29
-	  Bp = Fp[bbb,eps, Degrees => {0,0}]/(ideal eps^2)
-          dBp = differentialRingNoJoin Bp
+       	  Fp = ZZ/29;
+	  Bp = Fp[bbb,eps, Degrees => {0,0}]/(ideal eps^2);
+          dBp = differentialRingNoJoin Bp;
        	  L = {{{16, 2, 14}, {6, 19, 13}, {11, 1, 4, 3}, {4, 27, 11, 23}},
               {(13*x+y-7,-8*x^2*dx*dy+3*x*y*dx*dy+6*y^2*dx*dy-4*x*dx*dy-6*y*dx*dy),
               (
@@ -1450,28 +1601,34 @@ doc ///
 		   -7*x^2*dx*dy+10*x*y*dx*dy+3*y^2*dx*dy-11*x*dx*dy+8*y*dx*dy
 	      )}};
        Text
-       	  degrees of integral curves
+       	  The degrees of the integral curves are:
        Example	  
      	  sort apply(L#1,i->sum degree i#0)
        Text
-       	  is the differential form Darboux integrable
+       	  Does the differential form have a Darboux integrating
+          factor with respect to these integral curves?
        Example	  
           hasDarbouxIntegratingFactor(L)
+       Text
+       	  Does the differential form have a Darboux integral
+          with respect to these integral curves?
+       Example	           
 	  isDarbouxIntegrable(L)
        Text
-       	  now calculate the tangent spaces
+       	  Now we calculate the tangent spaces:
        Example
  	  darbouxTangentSpace(L,sub(bbb,dBp))
        Text
-       	  all codimensions are the same, this means that all deformation of
+       	  all dimensions are the same, this means that all deformations of
 	  the geometric integral curve configuration have a Darboux integrating
 	  factor and even a Darboux integral.
      Caveat
      	  the variable a should be of degree 0. Assumes that the
-	  variable a is in a differential ring that contains eps. 
+	  variable $a$ is in a differential ring that contains $eps$. 
 	  Assumes that the differential form has degree 3.
-	  ??? are these dimensions or codimensions ???
-     SeeAlso
+
+          ToDo: Check wether these numbers are dimensions or codimensions.
+    SeeAlso
      	  Darboux
 	  genericPowerElementAffine
 	  deformCofactor

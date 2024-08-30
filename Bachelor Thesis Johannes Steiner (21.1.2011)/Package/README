@@ -1,0 +1,4 @@
+Um centerfocus.exe und IntegralCurvesInc und die Funktion getIdeal benutzen zu können, müssen die Pfade richtig gesetzt sein. Dies kann nach der Installation über die Funktion defPfad geschehen (siehe Dokumentation), allerdings muss die Dokumentation dann ohne Beispiele erstellt werden:
+installPackage("LiftpointInterpolation",RunExamples=>false)
+
+Man kann die Pfade aber auch direkt in LiftpointInterpolation.m2 ändern, sie werden in Zeile 40-44 Definiert.
